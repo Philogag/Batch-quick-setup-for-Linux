@@ -2,13 +2,15 @@ import getopt
 import sys, os
 import paramiko
 
+from os_exec import get_exec_for_os
+
 arglist = [
     ['h'    , 'help'    , '', 'Show this help page.'],
     ['e'    , 'example' , '', 'Make a example Table.'],
     ['l:'   , 'list='   , '', ['Host list file, must the "csv" file encoding by UTF-8. ', 'Must use!', 'Use --example option to get a empty list.', 'Leave the first row as header.']],
     ['u:'   , 'user='   , 'root','User for doing Script.'],
     ['r:'   , 'rsa-key=', '~/.ssh/id_rsa',  'Rsa private key for ssh.'],
-    ['p:'   , 'passwd=' , '', 'User password for ssh, use rsa first.'],
+    ['p:'   , 'passwd=' , '', ['User password for ssh, use rsa first.', 'When set, ignore --rsa-key']],
 ]
 
 try:
@@ -64,12 +66,12 @@ if not 'l' in optdic.keys():
     printhelp()
     sys.exit(0)
 
-if not os.path.exist(optdic['l']):
+if not os.path.isfile(optdic['l']):
     print('The list file not found.\n')
     sys.exit(0)
 
 with open(optdic['l'], 'r', encoding="utf-8") as f :
-    rows = [r.split(',') for r in f.readlines()]
+    rows = [r.strip().split(',') for r in f.readlines()]
 
 if len(row) <= 2 or rows[0][0] != "HOST":
     print('No header have been found in list file.\n')
@@ -96,14 +98,10 @@ for r in rows[1:]:
         failed_rows.append(r)
         continue
 
-    sftp = ssh.open_sftp()
-    sftp.put('./reset.sh', '~/reset.sh')
-    sftp.chmod("~/reset.sh", "775")
-    sftp.close()
-
-    for arg1, arg2 in zip(rows[0], r)[1:]:
-        stdin, stdout, stderr = ssh.exec_command("~/reset.sh " + arg1 + " " + arg2)
-        result = stdout.read()
-        print(result)
-    ssh.exec_command("~/reset.sh exit")
+    print(r[0]+":", "Start.")
+    exe = get_exec_for_os(ssh)
+    for arg1, arg2 in list(zip(rows[0], r))[1:]:
+        if (len(arg2) > 0):
+            exe.do(arg1, arg2)
+    exe.close()
     print(r[0]+":", "OK.")
