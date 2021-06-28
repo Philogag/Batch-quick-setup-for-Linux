@@ -19,7 +19,7 @@
 
 当前兼容发行版：
 
-+ Centos 7
+[x] Centos 7
 
 ##### 参数说明
 
@@ -85,7 +85,7 @@ csv文件用于指定具体操作内容，使用 UTF-8 编码
 example.csv如下（严格控制空格，注意区分逗号和点号）
 
 ```
-HOST,bootproto,ipaddr,netmask,gateway,dns1,passwd,hostname
+HOST,bootproto,ipaddr,netmask,gateway,dns1,passwd,passwd,hostname
 10.10.21.34,static,10.10.20.100,255.255.0.0,10.10.20.254,114.114.114.114,root root, user1 123456,host1
 ```
 
